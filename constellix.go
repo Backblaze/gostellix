@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -75,14 +74,14 @@ func NewClient(apikey, secretkey string) *Client {
 	}
 }
 
-func (client *Client) getAllDomains() ([]constellixDomain, error) {
+func (client *Client) GetAllDomains() ([]constellixDomain, error) {
 	var domains []constellixDomain
 	body, _ := client.ApiRequest("v1/domains", "", "GET")
 	json.Unmarshal(body, &domains)
 	return domains, nil
 }
 
-func (client *Client) getDomain(domainid int) ([]constellixRecord, error) {
+func (client *Client) GetDomain(domainid int) ([]constellixRecord, error) {
 	var records []constellixRecord
 	body, _ := client.ApiRequest("v1/domains/" + strconv.Itoa(domainid) + "/records", "", "GET")
 	json.Unmarshal(body, &records)
