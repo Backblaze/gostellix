@@ -1,4 +1,4 @@
-package constellix
+package gostellix
 
 import (
 	"crypto/hmac"
