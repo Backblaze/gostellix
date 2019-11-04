@@ -13,6 +13,7 @@ import (
 
 const defaultApiURL string = "https://api.dns.constellix.com/"
 const authHeaderName string = "x-cns-security-token"
+const defaultUserAgent string = "gostellix/0.1"
 
 type ConstellixSoa struct {
 	PrimaryNameserver string `json:"primaryNameserver,omitempty"`
@@ -94,6 +95,7 @@ type ConstellixRecord struct {
 type Client struct {
 	ApiURL string
 	Token string
+	UserAgent string
 	HttpClient *http.Client
 }
 
@@ -111,6 +113,7 @@ func NewClient(apikey, secretkey string) *Client {
 		ApiURL: defaultApiURL,
 		Token: buildSecurityToken(apikey, secretkey),
 		HttpClient:  http.DefaultClient,
+		UserAgent: defaultUserAgent,
 	}
 }
 
@@ -155,8 +158,8 @@ func (client *Client) ApiRequest(endpoint, params,reqtype string) (response []by
 	   requrl += "?" + params
 	}
 	req, err := http.NewRequest(reqtype, requrl, nil)
-	//TODO: set UserAgent
 	req.Header.Add(authHeaderName, client.Token)
+	req.Header.Add("User-Agent", client.UserAgent)
 	resp, err := client.HttpClient.Do(req)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
