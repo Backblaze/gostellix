@@ -37,12 +37,13 @@ type ConstellixDomain struct {
 	Note string `json:"note,omitempty"`
 	Version int `json:"version,omitempty"`
 	Status string `json:"status,omitempty"`
-	tags []string `json:"tags,omitempty"`
+	Tags []string `json:"tags,omitempty"`
 	Soa ConstellixSoa `json:"soa,omitempty"`
 }
 
 type RoundRobinObj struct {
 	Value string `json:"value"`
+	Level string `json:"level,omitifempty"` // for MX records
 	DisableFlag bool `json:"disableFlag"`
 }
 type GeolocationObj struct {
@@ -66,7 +67,7 @@ type RoundRobinFailoverObjValues struct {
 }
 type RoundRobinFailoverObj struct {
 	Values []RoundRobinFailoverObjValues `json:"values"`
-	disableFlag bool `json:"disableFlag"`
+	DisableFlag bool `json:"disableFlag"`
 }
 type ConstellixRecord struct {
 	Id int `json:"id,omitempty"`
@@ -85,7 +86,7 @@ type ConstellixRecord struct {
 	RoundRobin []RoundRobinObj `json:"roundRobin"`
 	RecordFailover RecordFailoverObj  `json:"recordFailover,omitifempty"`
 	Pools []int `json:"pools,omitempty"`
-	roundRobinFailover RoundRobinFailoverObj `json:"roundRobinFailover"`
+	RoundRobinFailover RoundRobinFailoverObj `json:"roundRobinFailover"`
 	ModifiedTs int `json:"modifiedTs,omitempty"`
 	Value []string `json:"value,omitempty"`
 }
