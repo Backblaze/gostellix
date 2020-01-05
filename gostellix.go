@@ -154,16 +154,6 @@ func (client *Client) ListDomains() ([]string, error) {
 	return domainList, nil
 }
 
-// GetDomainRecords get all records for one domain by domain ID
-func (client *Client) GetDomainRecords(domainid int) ([]ConstellixRecord, error) {
-	var records []ConstellixRecord
-	body, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainid)+"/records", "", "GET")
-	//TODO: go through paging
-	//TODO: check error
-	json.Unmarshal(body, &records)
-	return records, err
-}
-
 // CreateDomains Create a list of domains by name
 func (client *Client) CreateDomains(domains []string) error {
 	nameObj := struct {
@@ -201,6 +191,44 @@ func (client *Client) GetRecordsByDomainName(domainName string) ([]ConstellixRec
 		}
 	}
 	return nil, nil
+}
+
+// GetDomainRecords get all records for one domain by domain ID
+func (client *Client) GetDomainRecords(domainid int) ([]ConstellixRecord, error) {
+	var records []ConstellixRecord
+	body, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainid)+"/records", "", "GET")
+	//TODO: go through paging
+	//TODO: check error
+	json.Unmarshal(body, &records)
+	return records, err
+}
+
+// GetDomainRecord Get one record from a domain, by ID
+func (client *Client) GetDomainRecord(domainID int, recordType string, recordID int) (ConstellixRecord, error) {
+	var domain ConstellixRecord
+	body, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainID)+"/records/"+recordType+"/"+strconv.Itoa(recordID), "", "GET")
+	json.Unmarshal(body, &domain)
+	return domain, err
+}
+
+// DeleteDomainRecord delete one domain record
+func (client *Client) DeleteDomainRecord(domainID int, recordType string, recordID int) error {
+	_, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainID)+"/records/"+recordType+"/"+strconv.Itoa(recordID), "", "DELETE")
+	return err
+}
+
+// CreateDomainRecord add a record to a domain
+func (client *Client) CreateDomainRecord(domainID int, record ConstellixRecord) error {
+	recordJSON, _ := json.Marshal(record)
+	_, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainID)+"/records"+record.Type, string(recordJSON), "POST")
+	return err
+}
+
+// ModifyDomainRecord add a record to a domain
+func (client *Client) ModifyDomainRecord(domainID int, record ConstellixRecord) error {
+	recordJSON, _ := json.Marshal(record)
+	_, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainID)+"/records"+record.Type, string(recordJSON), "PUT")
+	return err
 }
 
 // APIRequest make an API request
