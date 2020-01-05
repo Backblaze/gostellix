@@ -1,6 +1,7 @@
 package gostellix
 
 import (
+	"bytes"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
@@ -153,13 +154,42 @@ func (client *Client) ListDomains() ([]string, error) {
 	return domainList, nil
 }
 
-// GetDomain get one domain by ID
-func (client *Client) GetDomain(domainid int) ([]ConstellixRecord, error) {
+// GetDomainRecords get all records for one domain by domain ID
+func (client *Client) GetDomainRecords(domainid int) ([]ConstellixRecord, error) {
 	var records []ConstellixRecord
-	body, _ := client.APIRequest("v1/domains/"+strconv.Itoa(domainid)+"/records", "", "GET")
-	//TODO: go through paging?  Might not need to
+	body, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainid)+"/records", "", "GET")
+	//TODO: go through paging
+	//TODO: check error
 	json.Unmarshal(body, &records)
-	return records, nil
+	return records, err
+}
+
+// CreateDomains Create a list of domains by name
+func (client *Client) CreateDomains(domains []string) error {
+	nameObj := struct {
+		Names []string `json:"names"`
+	}{domains}
+	res, err := json.Marshal(nameObj)
+	if err != nil {
+		return err
+	}
+	jsonStr := string(res)
+	_, err = client.APIRequest("v1/domains/", jsonStr, "POST")
+	return err
+}
+
+// DeleteDomain delete domain, by integer id
+func (client *Client) DeleteDomain(id int) error {
+	_, err := client.APIRequest("v1/domains/"+strconv.Itoa(id), "", "DELETE")
+	return err
+}
+
+// ModifyDomain replace existing Domain
+func (client *Client) ModifyDomain(domain ConstellixDomain) error {
+	res, err := json.Marshal(domain)
+	jsonStr := string(res)
+	_, err = client.APIRequest("v1/domains/"+strconv.Itoa(domain.ID), jsonStr, "PUT")
+	return err
 }
 
 // GetRecordsByDomainName get all records for a domain, by name
@@ -167,7 +197,7 @@ func (client *Client) GetRecordsByDomainName(domainName string) ([]ConstellixRec
 	allDomains, _ := client.GetAllDomains()
 	for _, domain := range allDomains {
 		if domain.Name == domainName {
-			return client.GetDomain(domain.ID)
+			return client.GetDomainRecords(domain.ID)
 		}
 	}
 	return nil, nil
@@ -176,12 +206,21 @@ func (client *Client) GetRecordsByDomainName(domainName string) ([]ConstellixRec
 // APIRequest make an API request
 func (client *Client) APIRequest(endpoint, params, reqtype string) (response []byte, err error) {
 	requrl := client.APIURL + endpoint
-	if params != "" {
-		requrl += "?" + params
+	var req *http.Request
+	if reqtype == "PUT" || reqtype == "POST" {
+		req, err = http.NewRequest(reqtype, requrl, bytes.NewBuffer([]byte(params)))
+	} else if reqtype == "GET" || reqtype == "DELETE" {
+		if params != "" {
+			requrl += "?" + params
+		}
+		req, err = http.NewRequest(reqtype, requrl, nil)
+	} else {
+		// unknown request type
+		return nil, err
 	}
-	req, err := http.NewRequest(reqtype, requrl, nil)
 	req.Header.Add(authHeaderName, client.Token)
 	req.Header.Add("User-Agent", client.UserAgent)
+	req.Header.Add("Content-type", "application/json")
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
