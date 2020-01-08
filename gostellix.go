@@ -148,9 +148,9 @@ func (client *Client) GetAllDomains() ([]ConstellixDomain, error) {
 // GetDomainByName Get a single domain, by name
 func (client *Client) GetDomainByName(name string) (ConstellixDomain, error) {
 	allDomains, _ := client.GetAllDomains()
-	for domain := range allDomains {
-		if allDomains[domain].Name == name {
-			return allDomains[domain], nil
+	for _, domain := range allDomains {
+		if domain.Name == name {
+			return domain, nil
 		}
 	}
 	return ConstellixDomain{}, errors.New("No such domain")
@@ -266,6 +266,7 @@ func (client *Client) APIRequest(endpoint, params, reqtype string) (response []b
 		return nil, err
 	}
 	//TODO: handle errors.  Network failures, and maybe expired-token failures.  Or, rather, pass them up better
+	//TODO: check for non-200 and pass that up as well
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	return body, err
