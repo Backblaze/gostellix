@@ -127,8 +127,8 @@ func buildSecurityToken(apikey, secretkey string) string {
 	return apikey + ":" + hmacstr + ":" + timestamp
 }
 
-// NewClient Create a new client
-func NewClient(apikey, secretkey string) *Client {
+// New Create a new client
+func New(apikey, secretkey string) *Client {
 	return &Client{
 		APIURL:     defaultAPIURL,
 		Token:      buildSecurityToken(apikey, secretkey),
