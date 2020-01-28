@@ -147,7 +147,10 @@ func (client *Client) GetAllDomains() ([]ConstellixDomain, error) {
 
 // GetDomainByName Get a single domain, by name
 func (client *Client) GetDomainByName(name string) (ConstellixDomain, error) {
-	allDomains, _ := client.GetAllDomains()
+	allDomains, err := client.GetAllDomains()
+	if err != nil {
+		return ConstellixDomain{}, err
+	}
 	for _, domain := range allDomains {
 		if domain.Name == name {
 			return domain, nil
@@ -159,11 +162,13 @@ func (client *Client) GetDomainByName(name string) (ConstellixDomain, error) {
 // ListDomains get a bare list of all domain names
 func (client *Client) ListDomains() ([]string, error) {
 	var domainList []string
-	domainObjects, _ := client.GetAllDomains()
+	var err error
+	domainObjects, err := client.GetAllDomains()
+
 	for _, domain := range domainObjects {
 		domainList = append(domainList, domain.Name)
 	}
-	return domainList, nil
+	return domainList, err
 }
 
 // CreateDomains Create a list of domains by name
@@ -196,13 +201,16 @@ func (client *Client) ModifyDomain(domain ConstellixDomain) error {
 
 // GetRecordsByDomainName get all records for a domain, by name
 func (client *Client) GetRecordsByDomainName(domainName string) ([]ConstellixRecord, error) {
-	allDomains, _ := client.GetAllDomains()
+	allDomains, err := client.GetAllDomains()
+	if err != nil {
+		return []ConstellixRecord{}, nil
+	}
 	for _, domain := range allDomains {
 		if domain.Name == domainName {
 			return client.GetDomainRecords(domain.ID)
 		}
 	}
-	return nil, nil
+	return []ConstellixRecord{}, nil
 }
 
 // GetDomainRecords get all records for one domain by domain ID
@@ -211,7 +219,10 @@ func (client *Client) GetDomainRecords(domainid int) ([]ConstellixRecord, error)
 	body, err := client.APIRequest("v1/domains/"+strconv.Itoa(domainid)+"/records", "", "GET")
 	//TODO: go through paging
 	//TODO: check error
-	json.Unmarshal(body, &records)
+	if err != nil {
+		return []ConstellixRecord{}, err
+	}
+	err = json.Unmarshal(body, &records)
 	return records, err
 }
 
@@ -256,7 +267,7 @@ func (client *Client) APIRequest(endpoint, params, reqtype string) (response []b
 		req, err = http.NewRequest(reqtype, requrl, nil)
 	} else {
 		// unknown request type
-		return nil, err
+		return nil, errors.New("Unknown request type: " + reqtype)
 	}
 	req.Header.Add(authHeaderName, client.Token)
 	req.Header.Add("User-Agent", client.UserAgent)
@@ -265,8 +276,9 @@ func (client *Client) APIRequest(endpoint, params, reqtype string) (response []b
 	if err != nil {
 		return nil, err
 	}
-	//TODO: handle errors.  Network failures, and maybe expired-token failures.  Or, rather, pass them up better
-	//TODO: check for non-200 and pass that up as well
+	if resp.StatusCode != 200 {
+		return nil, errors.New(resp.Status)
+	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	return body, err
