@@ -38,8 +38,8 @@ type ConstellixDomain struct {
 	HasGeoIP        bool           `json:"hasGeoIP,omitempty"`
 	NameserverGroup int            `json:"nameserverGroup,omitempty"`
 	Nameservers     []string       `json:"nameservers,omitempty"`
-	CreatedTs       string         `json:"createdTs,omitempty"`
-	ModifiedTs      string         `json:"modifiedTs,omitempty"`
+	CreatedTs       time.Time      `json:"createdTs,omitempty"`
+	ModifiedTs      time.Time      `json:"modifiedTs,omitempty"`
 	Note            string         `json:"note,omitempty"`
 	Version         int            `json:"version,omitempty"`
 	Status          string         `json:"status,omitempty"`
