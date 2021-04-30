@@ -119,25 +119,29 @@ type ConstellixRecord struct {
 // Client Client for the Constellix API
 type Client struct {
 	APIURL     string
-	Token      string
+	apiKey 	   string
+	secretKey  string
 	UserAgent  string
 	HTTPClient *http.Client
 }
 
-func buildSecurityToken(apikey, secretkey string) string {
-	millis := time.Now().UnixNano() / 1000000
-	timestamp := strconv.FormatInt(millis, 10)
-	mac := hmac.New(sha1.New, []byte(secretkey))
-	mac.Write([]byte(timestamp))
-	hmacstr := base64.StdEncoding.EncodeToString(mac.Sum(nil))
-	return apikey + ":" + hmacstr + ":" + timestamp
+
+func (client *Client)getToken() string {
+	time := strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
+	h := hmac.New(sha1.New, []byte(client.secretKey))
+	h.Write([]byte(time))
+	sha := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	token := string(client.apiKey) + ":" + string(sha) + ":" + string(time)
+	return token
 }
+
 
 // New Create a new client
 func New(apikey, secretkey string) *Client {
 	return &Client{
 		APIURL:     defaultAPIURL,
-		Token:      buildSecurityToken(apikey, secretkey),
+		secretKey:  secretkey,
+		apiKey:     apikey,
 		HTTPClient: http.DefaultClient,
 		UserAgent:  defaultUserAgent,
 	}
@@ -287,7 +291,7 @@ func (client *Client) APIRequest(endpoint, params, reqtype string) (response []b
 		return nil, errors.New("Unknown request type: " + reqtype)
 	}
 
-	req.Header.Add(authHeaderName, client.Token)
+	req.Header.Add(authHeaderName, client.getToken())
 	req.Header.Add("User-Agent", client.UserAgent)
 	req.Header.Add("Content-type", "application/json")
 	resp, err := client.HTTPClient.Do(req)
