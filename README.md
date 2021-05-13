@@ -2,7 +2,7 @@
 Simple go library for Constellix API
 
 Example:
-```
+```golang
 package main
 
 import (
