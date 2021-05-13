@@ -31,15 +31,15 @@ type ConstellixSoa struct {
 
 // ConstellixDomain holds a domain
 type ConstellixDomain struct {
-	ID              int            `json:"id,omitempty"`
+	ID              int            `json:"id"`
 	Name            string         `json:"name"`
 	TypeID          int            `json:"typeId,omitempty"`
 	HasGtdRegions   bool           `json:"hasGtdRegions,omitempty"`
 	HasGeoIP        bool           `json:"hasGeoIP,omitempty"`
 	NameserverGroup int            `json:"nameserverGroup,omitempty"`
 	Nameservers     []string       `json:"nameservers,omitempty"`
-	CreatedTs       string         `json:"createdTs,omitempty"`
-	ModifiedTs      string         `json:"modifiedTs,omitempty"`
+	CreatedTs       time.Time      `json:"createdTs,omitempty"`
+	ModifiedTs      time.Time      `json:"modifiedTs,omitempty"`
 	Note            string         `json:"note,omitempty"`
 	Version         int            `json:"version,omitempty"`
 	Status          string         `json:"status,omitempty"`
@@ -50,88 +50,98 @@ type ConstellixDomain struct {
 // RoundRobinObj holds RoundRobin records from a domain
 type RoundRobinObj struct {
 	Value       string `json:"value"`
-	Level       string `json:"level,omitifempty"` // for MX records
+	Level       int    `json:"level,omitempty"` // for MX records
 	DisableFlag bool   `json:"disableFlag"`
 }
 
 // GeolocationObj geolocation info
 type GeolocationObj struct {
 	GeoipUserRegion []int `json:"geoipUserRegion,omitempty"`
-	Drop            bool  `json:"drop,omitifempty"`
+	Drop            bool  `json:"drop,omitempty"`
+	GeoipFailover   bool  `json:"geoipFailover,omitempty"`
+	GeoipProximity  int   `json:"geoipProximity,omitempty"`
 }
 
 // RecordFailoverValues Failover values
 type RecordFailoverValues struct {
 	Value       string `json:"value"`
-	CheckID     string `json:"checkId"`
-	DisableFlag string `json:"disableFlag"`
+	CheckID     int    `json:"checkId"`
+	DisableFlag bool   `json:"disableFlag"`
 }
 
 // RecordFailoverObj Failover info
 type RecordFailoverObj struct {
-	FailoverType int                    `json:"failoverType"`
-	Values       []RecordFailoverValues `json:"values"`
-	DisableFlag  bool                   `json:"disableFlag"`
+	FailoverType    int                    `json:"failoverType"`
+	Values          []RecordFailoverValues `json:"values"`
+	SortOrder       int                    `json:"sortOrder,omitempty"`
+	Failovertypestr string                 `json:"failoverTypeStr,omitempty"`
+	FailedFlag      bool                   `json:"failedFlag,omitempty"`
+	MarkedActive    bool                   `json:"markedActive,omitempty"`
+	Disabled        bool                   `json:"disabled,omitempty"`
 }
 
 // RoundRobinFailoverObjValues RR Failover values
-type RoundRobinFailoverObjValues struct {
-	Value       string `json:"value"`
-	DisableFlag bool   `json:"disableFlag"`
-	CheckID     int    `json:"checkId"`
-}
-
-// RoundRobinFailoverObj RR Failover Info
 type RoundRobinFailoverObj struct {
-	Values      []RoundRobinFailoverObjValues `json:"values"`
-	DisableFlag bool                          `json:"disableFlag"`
+	CheckID      int    `json:"checkId"`
+	Value        string `json:"value"`
+	DisableFlag  bool   `json:"disableFlag"`
+	SortOrder    int    `json:"sortOrder,omitempty"`
+	FailedFlag   bool   `json:"failedFlag,omitempty"`
+	MarkedActive bool   `json:"markedActive,omitempty"`
 }
 
 // ConstellixRecord domain record
 type ConstellixRecord struct {
-	ID                 int                    `json:"id,omitempty"`
-	Name               string                 `json:"name,omitempty"`
-	TTL                int                    `json:"ttl,omitempty"`
-	Geolocation        *GeolocationObj        `json:"geolocation,omitempty"`
-	RecordOption       string                 `json:"recordOption,omitempty"`
-	NoAnswer           bool                   `json:"noAnswer,omitempty"`
-	Note               string                 `json:"note,omitempty"`
-	GtdRegion          int                    `json:"gtdRegion,omitempty"`
-	Type               string                 `json:"type,omitempty"`
-	ParentID           int                    `json:"parentId,omitempty"`
-	Parent             string                 `json:"parent,omitempty"`
-	Source             string                 `json:"source,omitempty"`
-	ContactIDs         []int                  `json:"contactIds,omitempty"`
-	RoundRobin         []RoundRobinObj        `json:"roundRobin"`
-	RecordFailover     *RecordFailoverObj     `json:"recordFailover,omitifempty"`
-	Pools              []int                  `json:"pools,omitempty"`
-	RoundRobinFailover *RoundRobinFailoverObj `json:"roundRobinFailover"`
-	ModifiedTs         int                    `json:"modifiedTs,omitempty"`
-	Value              []string               `json:"value,omitempty"`
+	ID                 int                     `json:"id"`
+	Name               string                  `json:"name,omitempty"`
+	TTL                int                     `json:"ttl,omitempty"`
+	Geolocation        *GeolocationObj         `json:"geolocation,omitempty"`
+	RecordOption       string                  `json:"recordOption,omitempty"`
+	NoAnswer           bool                    `json:"noAnswer,omitempty"`
+	Note               string                  `json:"note,omitempty"`
+	GtdRegion          int                     `json:"gtdRegion,omitempty"`
+	Type               string                  `json:"type,omitempty"`
+	ParentID           int                     `json:"parentId,omitempty"`
+	Parent             string                  `json:"parent,omitempty"`
+	Source             string                  `json:"source,omitempty"`
+	ContactIDs         []int                   `json:"contactIds,omitempty"`
+	RoundRobin         []RoundRobinObj         `json:"roundRobin"`
+	RecordFailover     *RecordFailoverObj      `json:"recordFailover,omitempty"`
+	Pools              []int                   `json:"pools,omitempty"`
+	RoundRobinFailover []RoundRobinFailoverObj `json:"roundRobinFailover,omitempty"`
+	ModifiedTs         int                     `json:"modifiedTs,omitempty"`
+	ModifiedTsDate     time.Time               `json:"modifiedTsDate,omitempty"`
+	Createdts          time.Time               `json:"createdTs,omitempty"`
+	RecordType         string                  `json:"recordType,omitempty"`
+	Disabled           bool                    `json:"disabled"`
 }
 
 // Client Client for the Constellix API
 type Client struct {
 	APIURL     string
-	Token      string
+	apiKey 	   string
+	secretKey  string
 	UserAgent  string
 	HTTPClient *http.Client
 }
 
-func buildSecurityToken(apikey, secretkey string) string {
-	millis := time.Now().UnixNano() / 1000000
-	timestamp := strconv.FormatInt(millis, 10)
-	mac := hmac.New(sha1.New, []byte(secretkey))
-	mac.Write([]byte(timestamp))
-	hmacstr := base64.StdEncoding.EncodeToString(mac.Sum(nil))
-	return apikey + ":" + hmacstr + ":" + timestamp
+
+func (client *Client)getToken() string {
+	time := strconv.FormatInt(time.Now().UnixNano()/int64(time.Millisecond), 10)
+	h := hmac.New(sha1.New, []byte(client.secretKey))
+	h.Write([]byte(time))
+	sha := base64.StdEncoding.EncodeToString(h.Sum(nil))
+	token := string(client.apiKey) + ":" + string(sha) + ":" + string(time)
+	return token
 }
+
 
 // New Create a new client
 func New(apikey, secretkey string) *Client {
 	return &Client{
 		APIURL:     defaultAPIURL,
-		Token:      buildSecurityToken(apikey, secretkey),
+		secretKey:  secretkey,
+		apiKey:     apikey,
 		HTTPClient: http.DefaultClient,
 		UserAgent:  defaultUserAgent,
 	}
@@ -145,18 +155,30 @@ func (client *Client) GetAllDomains() ([]ConstellixDomain, error) {
 	return domains, nil
 }
 
+// GetDomainID get domain id by name
+func (client *Client) GetDomainID(name string) (int, error) {
+	var domains []ConstellixDomain
+	body, err := client.APIRequest("v1/domains/search", "exact="+name, "GET")
+	if err != nil {
+		return 0, err
+	}
+	json.Unmarshal(body, &domains)
+	return int(domains[0].ID), nil
+}
+
 // GetDomainByName Get a single domain, by name
 func (client *Client) GetDomainByName(name string) (ConstellixDomain, error) {
-	allDomains, err := client.GetAllDomains()
+	var domain ConstellixDomain
+	id, err := client.GetDomainID(name)
 	if err != nil {
 		return ConstellixDomain{}, err
 	}
-	for _, domain := range allDomains {
-		if domain.Name == name {
-			return domain, nil
-		}
+	body, err := client.APIRequest("v1/domains/"+strconv.Itoa(id), "", "GET")
+	if err != nil {
+		return ConstellixDomain{}, err
 	}
-	return ConstellixDomain{}, errors.New("No such domain")
+	json.Unmarshal(body, &domain)
+	return domain, nil
 }
 
 // ListDomains get a bare list of all domain names
@@ -200,17 +222,16 @@ func (client *Client) ModifyDomain(domain ConstellixDomain) error {
 }
 
 // GetRecordsByDomainName get all records for a domain, by name
-func (client *Client) GetRecordsByDomainName(domainName string) ([]ConstellixRecord, error) {
-	allDomains, err := client.GetAllDomains()
+func (client *Client) GetRecordsByDomainName(name string) ([]ConstellixRecord, error) {
+	id, err := client.GetDomainID(name)
 	if err != nil {
-		return []ConstellixRecord{}, nil
+		return []ConstellixRecord{}, err
 	}
-	for _, domain := range allDomains {
-		if domain.Name == domainName {
-			return client.GetDomainRecords(domain.ID)
-		}
+	domainRecords, err := client.GetDomainRecords(id)
+	if err != nil {
+		return []ConstellixRecord{}, err
 	}
-	return []ConstellixRecord{}, nil
+	return domainRecords, nil
 }
 
 // GetDomainRecords get all records for one domain by domain ID
@@ -269,13 +290,15 @@ func (client *Client) APIRequest(endpoint, params, reqtype string) (response []b
 		// unknown request type
 		return nil, errors.New("Unknown request type: " + reqtype)
 	}
-	req.Header.Add(authHeaderName, client.Token)
+
+	req.Header.Add(authHeaderName, client.getToken())
 	req.Header.Add("User-Agent", client.UserAgent)
 	req.Header.Add("Content-type", "application/json")
 	resp, err := client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
+
 	if resp.StatusCode != 200 {
 		return nil, errors.New(resp.Status)
 	}
